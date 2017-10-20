@@ -3,10 +3,9 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
 
-  
-    <FALCOR_PROJECT_DIR>$(SolutionDir)\.\..\falcor\framework\source\\..\</FALCOR_PROJECT_DIR>
+    <FALCOR_CORE_DIRECTORY>$(SolutionDir)\..\Falcor\Framework\Source\\..\</FALCOR_CORE_DIRECTORY>
     <FALCOR_BACKEND>FALCOR_VK</FALCOR_BACKEND>
-
+    
   </PropertyGroup>
   <PropertyGroup>
     <OutDir>$(SolutionDir)Bin\$(PlatformShortName)\$(Configuration)\</OutDir>
