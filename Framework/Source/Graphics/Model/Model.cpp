@@ -266,6 +266,102 @@ namespace Falcor
 		}
 	}
 
+	void Model::recenter(void)
+	{
+
+		glm::vec3 cenerOfMass = glm::vec3(0.0f);
+		int numVerticesTotal = 0;
+		for (uint32_t meshID = 0; meshID < this->getMeshCount(); meshID++)
+		{
+			Mesh::SharedPtr pMesh = mMeshes[meshID][0]->getObject();
+			Falcor::Vao::SharedPtr vAO = pMesh->getVao();
+			VertexLayout::SharedPtr pLayout = vAO->getVertexLayoutForModify();
+
+			uint32_t numVerticesMesh = pMesh->getVertexCount();
+
+			for (int bi = 0; bi < pLayout->getBufferCount(); bi++)
+			{
+				if (pLayout->getBufferLayout(bi)->getElementName(0) == VERTEX_POSITION_NAME)
+				{
+					Buffer::SharedPtr posBuffer = vAO->getVertexBuffer(bi);
+					glm::vec3 *vertices = (glm::vec3 *)posBuffer->map(Buffer::MapType::Read);
+					for (unsigned int i = 0; i < numVerticesMesh; i++)
+					{
+						cenerOfMass += vertices[i];
+						numVerticesTotal++;
+					}
+					break;
+				}
+			}
+		}
+		cenerOfMass /= numVerticesTotal;
+
+		glm::vec3 minExtent = glm::vec3(100000000.0f);
+		glm::vec3 maxExtent = glm::vec3(-100000000.0f);
+		for (uint32_t meshID = 0; meshID < this->getMeshCount(); meshID++)
+		{
+			Mesh::SharedPtr pMesh = mMeshes[meshID][0]->getObject();
+			Falcor::Vao::SharedPtr vAO = pMesh->getVao();
+			VertexLayout::SharedPtr pLayout = vAO->getVertexLayoutForModify();
+
+			uint32_t numVerticesMesh = pMesh->getVertexCount();
+
+			for (int bi = 0; bi < pLayout->getBufferCount(); bi++)
+			{
+				if (pLayout->getBufferLayout(bi)->getElementName(0) == VERTEX_POSITION_NAME)
+				{
+					Buffer::SharedPtr posBuffer = vAO->getVertexBuffer(bi);
+					glm::vec3 *vertices = (glm::vec3 *)posBuffer->map(Buffer::MapType::Read);
+					glm::vec3 *newVertices = new glm::vec3[numVerticesMesh];
+					for (unsigned int i = 0; i < numVerticesMesh; i++)
+					{
+						newVertices[i] = vertices[i] - cenerOfMass;
+						minExtent = glm::min(newVertices[i], minExtent);
+						maxExtent = glm::max(newVertices[i], maxExtent);
+					}
+
+					posBuffer->updateData(newVertices, 0, numVerticesMesh * sizeof(float3));
+					break;
+				}
+			}
+		}
+
+		this->mBoundingBox = BoundingBox::fromMinMax(minExtent, maxExtent);
+		this->mRadius = glm::length(maxExtent - minExtent) / 2.0f;
+
+	}
+
+	void Model::reorient(glm::vec3 yawPitchRoll)
+	{
+		for (uint32_t meshID = 0; meshID < this->getMeshCount(); meshID++)
+		{
+			Mesh::SharedPtr pMesh = mMeshes[meshID][0]->getObject();
+			Falcor::Vao::SharedPtr vAO = pMesh->getVao();
+			VertexLayout::SharedPtr pLayout = vAO->getVertexLayoutForModify();
+
+			uint32_t numVerticesMesh = pMesh->getVertexCount();
+
+			for (int bi = 0; bi < pLayout->getBufferCount(); bi++)
+			{
+				if (pLayout->getBufferLayout(bi)->getElementName(0) == VERTEX_POSITION_NAME)
+				{
+					Buffer::SharedPtr posBuffer = vAO->getVertexBuffer(bi);
+					glm::vec3 *vertices = (glm::vec3 *)posBuffer->map(Buffer::MapType::Read);
+					glm::vec3 *newVertices = new glm::vec3[numVerticesMesh];
+					for (unsigned int i = 0; i < numVerticesMesh; i++)
+					{
+						glm::vec3 radians = yawPitchRoll / 180.0f * 3.1415926535f;
+						glm::mat4x4 rotMatrix= glm::yawPitchRoll(radians.x, radians.y, radians.z);
+						newVertices[i] = glm::vec4(vertices[i], 1.0f) * rotMatrix;
+					}
+
+					posBuffer->updateData(newVertices, 0, numVerticesMesh * sizeof(float3));
+					break;
+				}
+			}
+		}
+	}
+
     Model::SharedPtr Model::createFromFile(const char* filename, LoadFlags flags)
     {
         SharedPtr pModel = SharedPtr(new Model());

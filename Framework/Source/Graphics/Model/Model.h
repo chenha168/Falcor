@@ -245,6 +245,10 @@ namespace Falcor
 
 		void importAO(std::string& filename);
 
+		void recenter(void);
+
+		void reorient(glm::vec3 yawPitchRoll);
+
 		bool hasAO() { return mAO.mInstances.size() > 0; }
 
     protected:
