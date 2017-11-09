@@ -321,6 +321,7 @@ namespace Falcor
 					}
 
 					posBuffer->updateData(newVertices, 0, numVerticesMesh * sizeof(float3));
+					delete[] newVertices;
 					break;
 				}
 			}
@@ -343,6 +344,7 @@ namespace Falcor
 
 			for (int bi = 0; bi < pLayout->getBufferCount(); bi++)
 			{
+				//rotate positions
 				if (pLayout->getBufferLayout(bi)->getElementName(0) == VERTEX_POSITION_NAME)
 				{
 					Buffer::SharedPtr posBuffer = vAO->getVertexBuffer(bi);
@@ -352,12 +354,47 @@ namespace Falcor
 					{
 						glm::vec3 radians = yawPitchRoll / 180.0f * 3.1415926535f;
 						glm::mat4x4 rotMatrix= glm::yawPitchRoll(radians.x, radians.y, radians.z);
-						newVertices[i] = glm::vec4(vertices[i], 1.0f) * rotMatrix;
+						newVertices[i] = rotMatrix * glm::vec4(vertices[i], 1.0f);
 					}
 
 					posBuffer->updateData(newVertices, 0, numVerticesMesh * sizeof(float3));
-					break;
+					delete[] newVertices;
 				}
+
+				//rotate normals
+				if (pLayout->getBufferLayout(bi)->getElementName(0) == VERTEX_NORMAL_NAME)
+				{
+					Buffer::SharedPtr normalBuffer = vAO->getVertexBuffer(bi);
+					glm::vec3 *normals = (glm::vec3 *)normalBuffer->map(Buffer::MapType::Read);
+					glm::vec3 *newNormals = new glm::vec3[numVerticesMesh];
+					for (unsigned int i = 0; i < numVerticesMesh; i++)
+					{
+						glm::vec3 radians = yawPitchRoll / 180.0f * 3.1415926535f;
+						glm::mat4x4 rotMatrix = glm::yawPitchRoll(radians.x, radians.y, radians.z);
+						newNormals[i] = rotMatrix * glm::vec4(normals[i], 0.0f);
+					}
+
+					normalBuffer->updateData(newNormals, 0, numVerticesMesh * sizeof(float3));
+					delete[] newNormals;
+				}
+
+				//rotate bitangents
+				if (pLayout->getBufferLayout(bi)->getElementName(0) == VERTEX_BITANGENT_NAME)
+				{
+					Buffer::SharedPtr normalBuffer = vAO->getVertexBuffer(bi);
+					glm::vec3 *normals = (glm::vec3 *)normalBuffer->map(Buffer::MapType::Read);
+					glm::vec3 *newNormals = new glm::vec3[numVerticesMesh];
+					for (unsigned int i = 0; i < numVerticesMesh; i++)
+					{
+						glm::vec3 radians = yawPitchRoll / 180.0f * 3.1415926535f;
+						glm::mat4x4 rotMatrix = glm::yawPitchRoll(radians.x, radians.y, radians.z);
+						newNormals[i] = rotMatrix * glm::vec4(normals[i], 0.0f);
+					}
+
+					normalBuffer->updateData(newNormals, 0, numVerticesMesh * sizeof(float3));
+					delete[] newNormals;
+				}
+
 			}
 		}
 	}
