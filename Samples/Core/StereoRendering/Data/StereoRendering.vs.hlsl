@@ -50,11 +50,21 @@ VS_OUT main(VS_IN vIn)
 #ifdef HAS_COLORS
     vOut.colorV = vIn.color;
 #else
-    vOut.colorV = 0;
+    vOut.colorV = 1;
 #endif
 
+#ifdef HAS_NORMAL
     vOut.normalW = mul(vIn.normal, getWorldInvTransposeMat(vIn)).xyz;
+#else
+	vOut.normalW = 0;
+#endif
+
+
+#ifdef HAS_BITANGENT
     vOut.bitangentW = mul(vIn.bitangent, (float3x3)worldMat).xyz;
+#else
+	vOut.bitangentW= 0;
+#endif
 
     return vOut;
 }

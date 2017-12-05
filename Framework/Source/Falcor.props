@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
 
-    <FALCOR_CORE_DIRECTORY>$(SolutionDir)\..\Falcor\Framework\Source\\..\</FALCOR_CORE_DIRECTORY>
+    <FALCOR_CORE_DIRECTORY>$(SolutionDir)\.\Framework\Source\\..\</FALCOR_CORE_DIRECTORY>
     <FALCOR_BACKEND>FALCOR_D3D12</FALCOR_BACKEND>
     
   </PropertyGroup>
