@@ -77,6 +77,7 @@ float3x3 getBlendedInvTransposeWorldMat(float4 weights, uint4 ids)
 
 cbuffer InternalPerMaterialCB : register(b12)
 {
+	int gMaterialID;
     MaterialData gMaterial;
     MaterialData gTemporalMaterial;
     float gTemporalLODThreshold;

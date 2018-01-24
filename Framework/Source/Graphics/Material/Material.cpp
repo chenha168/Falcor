@@ -313,6 +313,11 @@ namespace Falcor
 
         // First set the desc and the values
         finalize();
+
+		//set the material ID
+		size_t id_offset = pCB->getVariableOffset(std::string("gMaterialID"));
+		pCB->setVariable(id_offset, getId());
+
         static const size_t dataSize = sizeof(MaterialDesc) + sizeof(MaterialValues);
         static_assert(dataSize % sizeof(glm::vec4) == 0, "Material::MaterialData size should be a multiple of 16");
 
