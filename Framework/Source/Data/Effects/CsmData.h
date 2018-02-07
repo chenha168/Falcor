@@ -39,6 +39,7 @@
 #define CsmFilterEvsm2 4
 #define CsmFilterEvsm4 5
 #define CsmFilterStochasticPcf 6
+#define CsmFilterVisibility 7
 
 struct CsmData
 {

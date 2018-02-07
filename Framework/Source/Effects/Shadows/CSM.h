@@ -54,7 +54,7 @@ namespace Falcor
 
         /** Destructor
         */
-        ~CascadedShadowMaps();
+        virtual ~CascadedShadowMaps();
 
         /** Create a new instance.
             \param[in] mapWidth Shadow map width
@@ -125,7 +125,7 @@ namespace Falcor
 
         void setSdsmReadbackLatency(uint32_t latency);
 
-    private:
+    protected:
         CascadedShadowMaps(uint32_t mapWidth, uint32_t mapHeight, Light::SharedConstPtr pLight, Scene::SharedConstPtr pScene, uint32_t cascadeCount, ResourceFormat shadowMapFormat);
         Light::SharedConstPtr mpLight;
         Scene::SharedConstPtr mpScene;
@@ -190,5 +190,7 @@ namespace Falcor
         CsmData mCsmData;
 
         ProgramVars::BindLocation mPerLightCbLoc;
+
+		glm::mat4 mMatrixInverseWorldToClip;
     };
 }

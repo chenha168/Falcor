@@ -81,6 +81,11 @@ namespace Falcor
         const Program::SharedConstPtr getProgram() const { return mpProgram; }
         Program::SharedPtr getProgram() { return mpProgram; }
 
+		void setBlendState(BlendState::SharedPtr blendState)
+		{
+			mpPipelineState->setBlendState(blendState);
+		}
+
     protected:
         FullScreenPass() { sObjectCount++; }
         void init(const std::string& vsFile, const std::string & psFile, const Program::DefineList& programDefines, bool disableDepth, bool disableStencil, uint32_t viewportMask, bool enableSPS = false);

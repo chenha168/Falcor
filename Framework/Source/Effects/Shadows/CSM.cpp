@@ -148,6 +148,12 @@ namespace Falcor
             {
                 currentData.pContext->getGraphicsState()->getProgram()->removeDefine("TEST_ALPHA");
             }
+			ConstantBuffer* pCB = currentData.pVars->getConstantBuffer(kPerMaterialCbName).get();
+			if (pCB)
+			{
+				pMaterial->setIntoProgramVars(currentData.pVars, pCB, "gMaterial");
+			}
+
             const auto& pRsState = getRasterizerState(currentData.pMaterial);
             if(pRsState != mpLastSetRs)
             {
@@ -296,6 +302,10 @@ namespace Falcor
             colorFormat = ResourceFormat::RGBA32Float;
             progDef.add("_EVSM4");
             break;
+		case CsmFilterVisibility:
+			colorFormat = ResourceFormat::RG32Float;
+			progDef.add("_VISIBILITYMAP");
+			break;
         default:            
         {
             Fbo::Desc fboDesc;
@@ -533,6 +543,8 @@ namespace Falcor
         // Create the global shadow space
         createShadowMatrix(mpLight.get(), camFrustum.center, camFrustum.radius, mShadowPass.fboAspectRatio, mCsmData.globalMat);
 
+		mMatrixInverseWorldToClip = glm::inverse(mCsmData.globalMat);
+
         if(mCsmData.cascadeCount == 1)
         {
             mCsmData.cascadeScale[0] = glm::vec4(1);
@@ -588,6 +600,8 @@ namespace Falcor
 
             getCascadeCropParams(cascadeFrust, mCsmData.globalMat, mCsmData.cascadeScale[c], mCsmData.cascadeOffset[c]);
         }
+
+		
     }
 
     static bool checkOffset(size_t cbOffset, size_t cppOffset, const char* field)
@@ -780,6 +794,7 @@ namespace Falcor
         case CsmFilterVsm:
         case CsmFilterEvsm2:
         case CsmFilterEvsm4:
+		case CsmFilterVisibility:
             return mShadowPass.pFbo->getColorTexture(0);
         }
         return mShadowPass.pFbo->getDepthStencilTexture();

@@ -48,7 +48,7 @@ struct ShadowPassPSIn
     uint rtIndex : SV_RenderTargetArrayIndex;
 };
 
-#if defined(_VSM) || defined(_EVSM2)
+#if defined(_VSM) || defined(_EVSM2) || defined (_VISIBILITYMAP)
 float2 main(ShadowPassPSIn pIn) : SV_TARGET0
 #elif defined(_EVSM4)
 float4 main(ShadowPassPSIn pIn) : SV_TARGET0
@@ -69,11 +69,16 @@ void main(ShadowPassPSIn pIn)
 #if defined(_EVSM2) || defined(_EVSM4)
     depth = applyEvsmExponents(depth.x, gCsmData.evsmExponents);
 #endif
+
     float4 outDepth = float4(depth, depth*depth);
+	
+#if defined (_VISIBILITYMAP)
+	outDepth.zw = gMaterialID;
+#endif
 
 #ifdef _EVSM4
     return outDepth.xzyw;
-#elif defined(_VSM) || defined(_EVSM2)
+#elif defined(_VSM) || defined(_EVSM2) || defined (_VISIBILITYMAP)
     return outDepth.xz;
 #else
 #endif
