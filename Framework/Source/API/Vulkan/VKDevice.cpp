@@ -360,7 +360,7 @@ namespace Falcor
 
     VkPhysicalDevice initPhysicalDevice(VkInstance instance, DeviceApiData* pData)
     {
-        // Enumerate devices
+        // Enumerate devices 
         uint32_t count = 0;
         vkEnumeratePhysicalDevices(instance, &count, nullptr);
         assert(count > 0);
