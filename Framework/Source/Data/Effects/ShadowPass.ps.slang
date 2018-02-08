@@ -73,7 +73,7 @@ void main(ShadowPassPSIn pIn)
     float4 outDepth = float4(depth, depth*depth);
 	
 #if defined (_VISIBILITYMAP)
-	outDepth.zw = gMaterialID;
+//	outDepth.zw = gMaterialID;
 #endif
 
 #ifdef _EVSM4

@@ -147,7 +147,8 @@ namespace Falcor
         for (const auto& dir : gDataDirectories)
         {
             std::string canonDir = canonicalizeFilename(dir);
-            if (hasPrefix(canonFile, canonDir, false))
+            //TODO: fix wrong appending directory.
+            if (canonDir.length() && hasPrefix(canonFile, canonDir, false))
             {
                 // canonicalizeFilename adds trailing \\ to drive letters and removes them from paths containing folders
                 // The entire prefix directory including the slash should be removed
