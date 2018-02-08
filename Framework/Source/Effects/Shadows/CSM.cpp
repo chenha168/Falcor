@@ -151,7 +151,7 @@ namespace Falcor
 			ConstantBuffer* pCB = currentData.pVars->getConstantBuffer(kPerMaterialCbName).get();
 			if (pCB)
 			{
-				pMaterial->setIntoProgramVars(currentData.pVars, pCB, "gMaterial");
+                pMaterial->setIntoProgramVars(currentData.pVars, pCB, "gTemporalMaterial");// gMaterial");
 			}
 
             const auto& pRsState = getRasterizerState(currentData.pMaterial);
