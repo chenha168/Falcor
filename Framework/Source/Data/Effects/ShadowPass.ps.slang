@@ -34,8 +34,9 @@ layout(binding = 1) texture2D alphaMap : register(t0);
 layout(binding = 2) cbuffer AlphaMapCB : register(b1)
 {
     float alphaThreshold;
+    int materialId;
 };
-
+   
 layout(binding = 3) cbuffer PerLightCB : register(b0)
 {
     CsmData gCsmData;
@@ -73,7 +74,7 @@ void main(ShadowPassPSIn pIn)
     float4 outDepth = float4(depth, depth*depth);
 	
 #if defined (_VISIBILITYMAP)
-//	outDepth.zw = gMaterialID;
+	outDepth.zw = materialId;
 #endif
 
 #ifdef _EVSM4
