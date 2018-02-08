@@ -189,12 +189,7 @@ namespace Falcor
         Controls mControls;
         CsmData mCsmData;
 
-<<<<<<< HEAD
-        ProgramVars::BindLocation mPerLightCbLoc;
-
 		glm::mat4 mMatrixInverseWorldToClip;
-=======
         ProgramReflection::BindLocation mPerLightCbLoc;
->>>>>>> upstream/master
     };
 }

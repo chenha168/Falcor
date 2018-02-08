@@ -83,11 +83,7 @@ float3x3 getBlendedInvTransposeBoneMat(float4 weights, uint4 ids)
 ParameterBlock<MaterialData> gMaterial;
 cbuffer InternalPerMaterialCB
 {
-<<<<<<< HEAD
 	int gMaterialID;
-    MaterialData gMaterial;
-=======
->>>>>>> upstream/master
     MaterialData gTemporalMaterial;
     float gTemporalLODThreshold;
     bool gEnableTemporalNormalMaps;

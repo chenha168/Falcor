@@ -310,15 +310,17 @@ namespace Falcor
     static void setMaterialIntoBlockCommon(ParameterBlock* pBlock, ConstantBuffer* pCB, size_t offset, const std::string& varName, const MaterialData& data)
     {
         // First set the desc and the values
-<<<<<<< HEAD
-        finalize();
+//FIXME
+//        finalize();
+//
 
 		//set the material ID
 		size_t id_offset = pCB->getVariableOffset(std::string("gMaterialID"));
-		pCB->setVariable(id_offset, getId());
 
-=======
->>>>>>> upstream/master
+//FIXME
+//		pCB->setVariable(id_offset, getId());
+//
+
         static const size_t dataSize = sizeof(MaterialDesc) + sizeof(MaterialValues);
         static_assert(dataSize % sizeof(glm::vec4) == 0, "Material::MaterialData size should be a multiple of 16");
 
