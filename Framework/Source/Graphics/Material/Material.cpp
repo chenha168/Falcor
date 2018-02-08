@@ -315,7 +315,7 @@ namespace Falcor
 //
 
 		//set the material ID
-		size_t id_offset = pCB->getVariableOffset(std::string("gMaterialID"));
+		//size_t id_offset = pCB->getVariableOffset(std::string("gMaterialID"));
 
 //FIXME
 //		pCB->setVariable(id_offset, getId());
