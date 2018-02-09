@@ -258,7 +258,14 @@ namespace Falcor
         }
         else
         {
-            initializeDsvRtvUavDescCommon<DescType, true>(pResource, mipLevel, firstArraySlice, arraySize, desc);
+            initializeDsvRtvUavDescCommon<DescType, false>(pResource, mipLevel, firstArraySlice, arraySize, desc);
+            if (pResource->getType() == Resource::Type::Texture3D)
+            {
+                desc.Texture3D.FirstWSlice = 0;
+                Texture* texture = (Texture*)pResource;
+                desc.Texture3D.WSize = texture->getDepth();
+                desc.Texture3D.MipSlice = mipLevel;
+            }
         }
     }
 }
