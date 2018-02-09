@@ -134,12 +134,24 @@ namespace Falcor
 
         bool setPerMaterialData(const CurrentWorkingData& currentData, const Material* pMaterial) override
         {
+            struct ConstantBufferBlock
+            {
+                float alphaThreshold;
+                int materialId;
+            };
+
             mMaterialChanged = true;
+
+            // S-SIM: Material Id.
+            ConstantBufferBlock cbBlock;
+            cbBlock.alphaThreshold = currentData.pMaterial->getAlphaThreshold();
+            cbBlock.materialId = pMaterial->getId();
+
+            auto& pDefaultBlock = currentData.pContext->getGraphicsVars()->getDefaultBlock();
+            pDefaultBlock->getConstantBuffer(mBindLocations.alphaCB, 0)->setBlob(&cbBlock, 0u, sizeof(cbBlock));
+
             if (currentData.pMaterial->getAlphaMap())
             {
-                float alphaThreshold = currentData.pMaterial->getAlphaThreshold();
-                auto& pDefaultBlock = currentData.pContext->getGraphicsVars()->getDefaultBlock();
-                pDefaultBlock->getConstantBuffer(mBindLocations.alphaCB, 0)->setBlob(&alphaThreshold, 0u, sizeof(float));
                 pDefaultBlock->setSrv(mBindLocations.alphaMap, 0, currentData.pMaterial->getAlphaMap()->getSRV());
                 pDefaultBlock->setSampler(mBindLocations.alphaMapSampler, 0, mpAlphaSampler);
                 currentData.pContext->getGraphicsState()->getProgram()->addDefine("TEST_ALPHA");
@@ -148,11 +160,6 @@ namespace Falcor
             {
                 currentData.pContext->getGraphicsState()->getProgram()->removeDefine("TEST_ALPHA");
             }
-			ConstantBuffer* pCB = currentData.pVars->getConstantBuffer(kPerMaterialCbName).get();
-			if (pCB)
-			{
-                pMaterial->setIntoProgramVars(currentData.pVars, pCB, "gTemporalMaterial");// gMaterial");
-			}
 
             const auto& pRsState = getRasterizerState(currentData.pMaterial);
             if(pRsState != mpLastSetRs)
