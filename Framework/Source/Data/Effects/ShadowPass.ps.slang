@@ -74,7 +74,8 @@ void main(ShadowPassPSIn pIn)
     float4 outDepth = float4(depth, depth*depth);
 	
 #if defined (_VISIBILITYMAP)
-	outDepth.zw = materialId;
+    // Get viewspace Z instead of clip space Z.
+    outDepth = float4(pIn.pos.ww, materialId, materialId);
 #endif
 
 #ifdef _EVSM4

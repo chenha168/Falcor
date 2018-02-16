@@ -135,7 +135,7 @@ namespace Falcor
 
         void calcDistanceRange(RenderContext* pRenderCtx, const Camera* pCamera, Texture::SharedPtr pDepthBuffer, glm::vec2& distanceRange);
         void createShadowPassResources(uint32_t mapWidth, uint32_t mapHeight);
-        void partitionCascades(const Camera* pCamera, const glm::vec2& distanceRange);
+        virtual void partitionCascades(const Camera* pCamera, const glm::vec2& distanceRange);
         void renderScene(RenderContext* pCtx);
 
         // Shadow-pass
@@ -189,7 +189,8 @@ namespace Falcor
         Controls mControls;
         CsmData mCsmData;
 
-		glm::mat4 mMatrixInverseWorldToClip;
+        glm::mat4 mMatrixWorldToLight;
+
         ProgramReflection::BindLocation mPerLightCbLoc;
     };
 }
