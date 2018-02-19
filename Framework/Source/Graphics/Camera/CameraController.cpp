@@ -220,6 +220,13 @@ namespace Falcor
                 movement.y += mMovement.up ? 1 : 0;
                 movement.y += mMovement.down ? -1 : 0;
 
+                //Hao: This is a crazy linux bug, the line that sets the backward move does not work? WHY???
+                #ifndef WIN32
+                if (mMovement.backward) {
+                    movement.z = -1;
+                }
+                #endif
+
                 glm::vec3 camPos = mpCamera->getPosition();
                 glm::vec3 camTarget = mpCamera->getTarget();
                 glm::vec3 camUp = mpCamera->getUpVector();
