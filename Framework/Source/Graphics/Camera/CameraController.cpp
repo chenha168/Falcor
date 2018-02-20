@@ -220,35 +220,13 @@ namespace Falcor
                 movement.y += mMovement.up ? 1 : 0;
                 movement.y += mMovement.down ? -1 : 0;
 
-                if (mMovement.forward== true)
-                {
-                    printf("forward\n");
-                }
-
-                if (mMovement.backward)
-                {
-                    printf("backward\n");
-                }
-
-                if (mMovement.left)
-                {
-                    printf("left\n");
-                }
-
-                if (mMovement.right)
-                {
-                    printf("right\n");
-                }
-
-
                 glm::vec3 camPos = mpCamera->getPosition();
                 glm::vec3 camTarget = mpCamera->getTarget();
                 glm::vec3 camUp = mpCamera->getUpVector();
 
                 glm::vec3 viewDir = normalize(camTarget - camPos);
                 glm::vec3 sideway = glm::cross(viewDir, normalize(camUp));
-
-
+                
                 float elapsedTime = mTimer.getElapsedTime();
 
                 float curMove = mSpeedModifier * mSpeed * elapsedTime;
