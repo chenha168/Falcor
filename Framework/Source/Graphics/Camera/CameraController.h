@@ -155,7 +155,7 @@ namespace Falcor
                 bool up       : 1;
                 bool down     : 1;
             };
-            unsigned int b = false;
+            unsigned int b = 0;
         } mMovement;
         float mSpeedModifier = 1.0f;
     };
