@@ -226,7 +226,7 @@ namespace Falcor
 
                 glm::vec3 viewDir = normalize(camTarget - camPos);
                 glm::vec3 sideway = glm::cross(viewDir, normalize(camUp));
-
+                
                 float elapsedTime = mTimer.getElapsedTime();
 
                 float curMove = mSpeedModifier * mSpeed * elapsedTime;
@@ -238,6 +238,7 @@ namespace Falcor
 
                 mpCamera->setPosition(camPos);
                 mpCamera->setTarget(camTarget);
+
                 dirty = true;
             }
         }

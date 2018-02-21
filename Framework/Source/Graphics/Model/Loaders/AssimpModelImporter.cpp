@@ -393,17 +393,7 @@ namespace Falcor
         {
             pMaterial->setDoubleSided((isDoubleSided != 0));
         }
-//FIXME
-		//// Set ID as 0 if postfixed with _ground.
-		//if (nameStr.rfind("_ground") == nameStr.length() - 7)
-		//{
-		//	pMaterial->setID(0); 
-		//}
-		//else
-		//{
-		//	pMaterial->setID(1);
-		//}
-//
+
         // Material name
         aiString name;
         pAiMaterial->Get(AI_MATKEY_NAME, name);

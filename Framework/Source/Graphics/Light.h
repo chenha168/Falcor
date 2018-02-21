@@ -259,7 +259,12 @@ namespace Falcor
         */
         void move(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up) override;
 
+        // M-SIM
+        void setDistance(float dist) { mDistance = dist; }
+        float getDistance() const { return mDistance; }
+
     private:
+        float mDistance;
     };
 
     /**

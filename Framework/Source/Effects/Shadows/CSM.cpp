@@ -134,12 +134,24 @@ namespace Falcor
 
         bool setPerMaterialData(const CurrentWorkingData& currentData, const Material* pMaterial) override
         {
+            struct ConstantBufferBlock
+            {
+                float alphaThreshold;
+                int materialId;
+            };
+
             mMaterialChanged = true;
+
+            // S-SIM: Material Id.
+            ConstantBufferBlock cbBlock;
+            cbBlock.alphaThreshold = currentData.pMaterial->getAlphaThreshold();
+            cbBlock.materialId = pMaterial->getId();
+
+            auto& pDefaultBlock = currentData.pContext->getGraphicsVars()->getDefaultBlock();
+            pDefaultBlock->getConstantBuffer(mBindLocations.alphaCB, 0)->setBlob(&cbBlock, 0u, sizeof(cbBlock));
+
             if (currentData.pMaterial->getAlphaMap())
             {
-                float alphaThreshold = currentData.pMaterial->getAlphaThreshold();
-                auto& pDefaultBlock = currentData.pContext->getGraphicsVars()->getDefaultBlock();
-                pDefaultBlock->getConstantBuffer(mBindLocations.alphaCB, 0)->setBlob(&alphaThreshold, 0u, sizeof(float));
                 pDefaultBlock->setSrv(mBindLocations.alphaMap, 0, currentData.pMaterial->getAlphaMap()->getSRV());
                 pDefaultBlock->setSampler(mBindLocations.alphaMapSampler, 0, mpAlphaSampler);
                 currentData.pContext->getGraphicsState()->getProgram()->addDefine("TEST_ALPHA");
@@ -148,11 +160,6 @@ namespace Falcor
             {
                 currentData.pContext->getGraphicsState()->getProgram()->removeDefine("TEST_ALPHA");
             }
-			ConstantBuffer* pCB = currentData.pVars->getConstantBuffer(kPerMaterialCbName).get();
-			if (pCB)
-			{
-				pMaterial->setIntoProgramVars(currentData.pVars, pCB, "gMaterial");
-			}
 
             const auto& pRsState = getRasterizerState(currentData.pMaterial);
             if(pRsState != mpLastSetRs)
@@ -164,15 +171,16 @@ namespace Falcor
         };
     };
 
-    void createShadowMatrix(const DirectionalLight* pLight, const glm::vec3& center, float radius, glm::mat4& shadowVP)
+    void createShadowMatrix(const DirectionalLight* pLight, const glm::vec3& center, float radius, glm::mat4& shadowVP, glm::mat4& shadowWorldToLight)
     {
         glm::mat4 view = glm::lookAt(center, center + pLight->getWorldDirection(), glm::vec3(0, 1, 0));
         glm::mat4 proj = glm::ortho(-radius, radius, -radius, radius, -radius, radius);
 
         shadowVP = proj * view;
+        shadowWorldToLight = view;
     }
 
-    void createShadowMatrix(const PointLight* pLight, const glm::vec3& center, float radius, float fboAspectRatio, glm::mat4& shadowVP)
+    void createShadowMatrix(const PointLight* pLight, const glm::vec3& center, float radius, float fboAspectRatio, glm::mat4& shadowVP, glm::mat4& shadowWorldToLight)
     {
         const glm::vec3 lightPos = pLight->getWorldPosition();
         const glm::vec3 lookat = pLight->getWorldDirection() + lightPos;
@@ -190,16 +198,17 @@ namespace Falcor
         glm::mat4 proj = glm::perspective(angle, fboAspectRatio, nearZ, maxZ);
 
         shadowVP = proj * view;
+        shadowWorldToLight = view;
     }
 
-    void createShadowMatrix(const Light* pLight, const glm::vec3& center, float radius, float fboAspectRatio, glm::mat4& shadowVP)
+    void createShadowMatrix(const Light* pLight, const glm::vec3& center, float radius, float fboAspectRatio, glm::mat4& shadowVP, glm::mat4& shadowWorldToLight)
     {
         switch(pLight->getType())
         {
         case LightDirectional:
-            return createShadowMatrix((DirectionalLight*)pLight, center, radius, shadowVP);
+            return createShadowMatrix((DirectionalLight*)pLight, center, radius, shadowVP, shadowWorldToLight);
         case LightPoint:
-            return createShadowMatrix((PointLight*)pLight, center, radius, fboAspectRatio, shadowVP);
+            return createShadowMatrix((PointLight*)pLight, center, radius, fboAspectRatio, shadowVP, shadowWorldToLight);
         default:
             should_not_get_here();
         }
@@ -542,9 +551,7 @@ namespace Falcor
         camClipSpaceToWorldSpace(pCamera, camFrustum.crd, camFrustum.center, camFrustum.radius);
 
         // Create the global shadow space
-        createShadowMatrix(mpLight.get(), camFrustum.center, camFrustum.radius, mShadowPass.fboAspectRatio, mCsmData.globalMat);
-
-		mMatrixInverseWorldToClip = glm::inverse(mCsmData.globalMat);
+        createShadowMatrix(mpLight.get(), camFrustum.center, camFrustum.radius, mShadowPass.fboAspectRatio, mCsmData.globalMat, mMatrixWorldToLight);
 
         if(mCsmData.cascadeCount == 1)
         {

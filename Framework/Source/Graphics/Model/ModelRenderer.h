@@ -45,8 +45,9 @@ namespace Falcor
             \param[in] pCamera The camera to use
             \param[in] frustumCulling Enable/disable per-mesh frustum culling
         */
-        static void render(RenderContext* pRenderContext, Model::SharedPtr pModel, Camera* pCamera, bool frustumCulling = true, glm::vec3& translation= glm::vec3(), glm::vec3& yawPitchRoll= glm::vec3(), glm::vec3& scale= glm::vec3(1.0f));
+        static void render(RenderContext* pRenderContext, Model::SharedPtr pModel, Camera* pCamera, bool frustumCulling = true, glm::vec3 translation= glm::vec3(0.0f), glm::vec3 yawPitchRoll= glm::vec3(0.0f), glm::vec3 scale= glm::vec3(1.0f));
 
     private:
     };
 }
+

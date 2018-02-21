@@ -118,6 +118,11 @@ namespace Falcor
         return (stat(pathname, &sb) == 0) && S_ISDIR(sb.st_mode);
     }
 
+    bool createDirectory(const std::string& path)
+    {
+        return !mkdir(path.c_str(), 0755);
+    }
+
     const std::string& getExecutableDirectory()
     {
         char result[PATH_MAX];
