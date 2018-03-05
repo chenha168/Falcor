@@ -88,8 +88,7 @@ namespace Falcor
 
 	void Model::exportAOMeshes(std::string& filename)
 	{
-	//FIXME: HAO: COMMENT OUT FOR LINUX
-	/*
+#ifdef WIN32
 		FILE* file = NULL;
 		fopen_s(&file, filename.c_str(), "wb");
 		if (file)
@@ -159,13 +158,12 @@ namespace Falcor
 
 			fclose(file);
 		}
-	*/
+#endif
 	}
 
 	void Model::importAO(std::string& filename)
 	{
-	//FIXME: HAO: COMMENT OUT FOR LINUX BUILD
-	/*
+#ifdef WIN32
 		FILE* file = NULL;
 		fopen_s(&file, filename.c_str(), "rb");
 		if (file)
@@ -269,7 +267,7 @@ namespace Falcor
 			fclose(file);
 
 		}
-	*/
+#endif
 	}
 
 	void Model::recenter(void)

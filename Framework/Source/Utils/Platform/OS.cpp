@@ -147,6 +147,7 @@ namespace Falcor
         for (const auto& dir : gDataDirectories)
         {
             std::string canonDir = canonicalizeFilename(dir);
+
             //TODO: fix wrong appending directory.
             if (canonDir.length() && hasPrefix(canonFile, canonDir, false))
             {
