@@ -67,6 +67,13 @@ namespace Falcor
             BuffersAsShaderResource     = 0x10,   ///< Generate the VBs and IB with the shader-resource-view bind flag
         };
 
+        // struct containing any extra parameters passed to the model loading code.
+        struct LoadContext
+        {
+            AnimationController::SharedPtr mAnimationController; // By default, model loading code creates and uses
+                    // Falcor's AnimationController class. If a non-null value is set for this, the code uses this passed one instead.
+        };
+
 		struct AOModel
 		{
 			struct PerInstanceAO
@@ -81,7 +88,7 @@ namespace Falcor
 
         /** Create a new model from file
         */
-        static SharedPtr createFromFile(const char* filename, LoadFlags flags = LoadFlags::None);
+        static SharedPtr createFromFile(const char* filename, LoadFlags flags = LoadFlags::None, LoadContext* loadContext = nullptr);
 
         static SharedPtr create();
 
@@ -193,7 +200,9 @@ namespace Falcor
 
         /** Set the animation controller for the model.
         */
-        void setAnimationController(AnimationController::UniquePtr pAnimController);
+        void setAnimationController(AnimationController::SharedPtr pAnimController);
+        AnimationController::SharedPtr getAnimationController();
+        AnimationController::SharedConstPtr getAnimationController() const;
 
         /** Check if the model has bones.
         */
@@ -281,7 +290,7 @@ namespace Falcor
 
         std::vector<MeshInstanceList> mMeshes; // [Mesh][Instance]
 
-        AnimationController::UniquePtr mpAnimationController;
+        AnimationController::SharedPtr mpAnimationController;
 
 		AOModel mAO;	//ambient occlusion data
 

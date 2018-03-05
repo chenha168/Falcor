@@ -405,7 +405,7 @@ namespace Falcor
 		}
 	}
 
-    Model::SharedPtr Model::createFromFile(const char* filename, LoadFlags flags)
+    Model::SharedPtr Model::createFromFile(const char* filename, LoadFlags flags, LoadContext* loadContext)
     {
         SharedPtr pModel = SharedPtr(new Model());
         bool res;
@@ -416,7 +416,7 @@ namespace Falcor
         }
         else
         {
-            res = AssimpModelImporter::import(*pModel, filename, flags);
+            res = AssimpModelImporter::import(*pModel, filename, flags, loadContext);
         }
 
         if(res)
@@ -614,9 +614,19 @@ namespace Falcor
         }
     }
 
-    void Model::setAnimationController(AnimationController::UniquePtr pAnimController)
+    void Model::setAnimationController(AnimationController::SharedPtr pAnimController)
     {
-        mpAnimationController = std::move(pAnimController);
+        mpAnimationController = pAnimController;
+    }
+
+    AnimationController::SharedPtr Model::getAnimationController()
+    {
+        return mpAnimationController;
+    }
+
+    AnimationController::SharedConstPtr Model::getAnimationController() const
+    {
+        return mpAnimationController;
     }
 
     void Model::addMeshInstance(const Mesh::SharedPtr& pMesh, const glm::mat4& baseTransform)

@@ -47,20 +47,25 @@ namespace Falcor
     class Model;
     class AssimpModelImporter;
 
-    class AnimationController
+    class AnimationController : public std::enable_shared_from_this<AnimationController>
     {
     public:
         using UniquePtr = std::unique_ptr<AnimationController>;
         using UniqueConstPtr = std::unique_ptr<const AnimationController>;
+        using SharedPtr = std::shared_ptr<AnimationController>;
+        using SharedConstPtr = std::shared_ptr<const AnimationController>;
         static const uint32_t kInvalidBoneID = -1;
         static const uint32_t kBindPoseAnimationId = -1;
 
-        static UniquePtr create(const std::vector<Bone>& bones);
-        static UniquePtr create(const AnimationController& other);
+        static SharedPtr create(const std::vector<Bone>& bones);
+        static SharedPtr create(const AnimationController& other);
+        AnimationController() {}
         ~AnimationController();
 
+        void initWithBones(const std::vector<Bone>& bones);
+
         void addAnimation(Animation::UniquePtr pAnimation);
-        void animate(double currentTime);
+        virtual void animate(double currentTime);
 
         uint32_t getAnimationCount() const { return uint32_t(mAnimations.size()); }
         const std::string& getAnimationName(uint32_t ID) const;

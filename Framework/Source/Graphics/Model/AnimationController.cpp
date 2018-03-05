@@ -61,22 +61,19 @@ namespace Falcor
         dotfile.close();
     }
 
-    AnimationController::UniquePtr AnimationController::create(const std::vector<Bone>& Bones)
+    AnimationController::SharedPtr AnimationController::create(const std::vector<Bone>& Bones)
     {
-        return UniquePtr(new AnimationController(Bones));
+        return SharedPtr(new AnimationController(Bones));
     }
 
-    AnimationController::UniquePtr AnimationController::create(const AnimationController& other)
+    AnimationController::SharedPtr AnimationController::create(const AnimationController& other)
     {
-        return UniquePtr(new AnimationController(other.mBones));
+        return SharedPtr(new AnimationController(other.mBones));
     }
 
     AnimationController::AnimationController(const std::vector<Bone>& Bones)
     {
-        mBones = Bones;
-        mBoneTransforms.resize(mBones.size());
-        mBoneInvTransposeTransforms.resize(mBones.size());
-        setActiveAnimation(kBindPoseAnimationId);
+        initWithBones(Bones);
     }
 
     void AnimationController::addAnimation(Animation::UniquePtr pAnimation)
@@ -90,6 +87,14 @@ namespace Falcor
     {
         assert(boneID < mBones.size());
         mBones[boneID].localTransform = transform;
+    }
+
+    void AnimationController::initWithBones(const std::vector<Bone>& bones)
+    {
+        mBones = bones;
+        mBoneTransforms.resize(mBones.size());
+        mBoneInvTransposeTransforms.resize(mBones.size());
+        setActiveAnimation(kBindPoseAnimationId);
     }
 
     void AnimationController::animate(double currentTime)

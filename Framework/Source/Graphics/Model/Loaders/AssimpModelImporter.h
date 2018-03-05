@@ -59,7 +59,7 @@ namespace Falcor
             \param[in] flags Flags controlling model creation
             \return Whether import succeeded
         */
-        static bool import(Model& model, const std::string& filename, Model::LoadFlags flags);
+        static bool import(Model& model, const std::string& filename, Model::LoadFlags flags, Model::LoadContext* loadContext = nullptr);
 
     private:
 
@@ -69,12 +69,12 @@ namespace Falcor
         AssimpModelImporter(const AssimpModelImporter&) = delete;
         void operator=(const AssimpModelImporter&) = delete;
 
-        bool initModel(const std::string& filename);
-        bool createDrawList(const aiScene* pScene);
+        bool initModel(const std::string& filename, Model::LoadContext* loadContext);
+        bool createDrawList(const aiScene* pScene, Model::LoadContext* loadContext);
         bool parseAiSceneNode(const aiNode* pCurrent, const aiScene* pScene, IdToMesh& aiToFalcorMesh);
         bool createAllMaterials(const aiScene* pScene, const std::string& modelFolder, bool isObjFile, bool useSrgb);
 
-        void createAnimationController(const aiScene* pScene);
+        void createAnimationController(const aiScene* pScene, Model::LoadContext* loadContext);
         void initializeBones(const aiScene* pScene);
         uint32_t initBone(const aiNode* pNode, uint32_t parentID, uint32_t boneID);
         void initializeBonesOffsetMatrices(const aiScene* pScene);

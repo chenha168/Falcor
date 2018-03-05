@@ -484,15 +484,15 @@ namespace Falcor
         return b;
     }
 
-    bool AssimpModelImporter::createDrawList(const aiScene* pScene)
+    bool AssimpModelImporter::createDrawList(const aiScene* pScene, Model::LoadContext* loadContext)
     {
-        createAnimationController(pScene);
+        createAnimationController(pScene, loadContext);
         IdToMesh aiToFalcorMeshId;
         aiNode* pRoot = pScene->mRootNode;
         return parseAiSceneNode(pRoot, pScene, aiToFalcorMeshId);
     }
 
-    bool AssimpModelImporter::initModel(const std::string& filename)
+    bool AssimpModelImporter::initModel(const std::string& filename, Model::LoadContext* loadContext)
     {
         std::string fullpath;
         if (findFileInDataDirectories(filename, fullpath) == false)
@@ -546,7 +546,7 @@ namespace Falcor
             return false;
         }
 
-        if (createDrawList(pScene) == false)
+        if (createDrawList(pScene, loadContext) == false)
         {
             logError(std::string("Can't create draw lists for model ") + filename, true);
             return false;
@@ -555,10 +555,10 @@ namespace Falcor
         return true;
     }
 
-    bool AssimpModelImporter::import(Model& model, const std::string& filename, Model::LoadFlags flags)
+    bool AssimpModelImporter::import(Model& model, const std::string& filename, Model::LoadFlags flags, Model::LoadContext* loadContext)
     {
         AssimpModelImporter loader(model, flags);
-        return loader.initModel(filename);
+        return loader.initModel(filename, loadContext);
     }
 
     bool AssimpModelImporter::isUsedNode(const aiNode* pNode) const
@@ -664,7 +664,7 @@ namespace Falcor
         }
     }
 
-    void AssimpModelImporter::createAnimationController(const aiScene* pScene)
+    void AssimpModelImporter::createAnimationController(const aiScene* pScene, Model::LoadContext* loadContext)
     {
         initializeBones(pScene);
 
@@ -672,7 +672,16 @@ namespace Falcor
         // This will render bind pose if there are no animations.
         if (mBones.empty() == false)
         {
-            auto pAnimCtrl = AnimationController::create(mBones);
+            AnimationController::SharedPtr pAnimCtrl;
+            if (loadContext && loadContext->mAnimationController)
+            {
+                pAnimCtrl = loadContext->mAnimationController;
+                pAnimCtrl->initWithBones(mBones);
+            }
+            else
+            {
+                pAnimCtrl = AnimationController::create(mBones);
+            }
 
             for (uint32_t i = 0; i < pScene->mNumAnimations; i++)
             {
@@ -680,7 +689,7 @@ namespace Falcor
                 pAnimCtrl->addAnimation(std::move(pAnimation));
             }
 
-            mModel.setAnimationController(std::move(pAnimCtrl));
+            mModel.setAnimationController(pAnimCtrl);
         }
     }
 
