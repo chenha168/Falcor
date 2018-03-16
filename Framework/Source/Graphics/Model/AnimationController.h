@@ -75,6 +75,7 @@ namespace Falcor
         const std::vector<mat4>& getBoneMatrices() const { return mBoneTransforms; }
         const std::vector<mat4>& getBoneInvTransposeMatrices() const { return mBoneInvTransposeTransforms; }
         uint32_t getBoneCount() const { return uint32_t(mBones.size()); }
+        const Bone& getBone(uint32_t boneID) const { return mBones[boneID]; }
 
         uint32_t getBoneIdFromName(const std::string& name) const;
         void setBoneLocalTransform(uint32_t boneID, const glm::mat4& transform);
