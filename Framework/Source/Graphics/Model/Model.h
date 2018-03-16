@@ -72,6 +72,10 @@ namespace Falcor
         {
             AnimationController::SharedPtr mAnimationController; // By default, model loading code creates and uses
                     // Falcor's AnimationController class. If a non-null value is set for this, the code uses this passed one instead.
+            bool mVerifyBeforeAddingNodeAsBone; // Falcor code sometimes adds some non-bone nodes as bones. If this parameter is set to
+                    // true, we try to avoid that.
+
+            LoadContext() : mVerifyBeforeAddingNodeAsBone(true) {}
         };
 
 		struct AOModel

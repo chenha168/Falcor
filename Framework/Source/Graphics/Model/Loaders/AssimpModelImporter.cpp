@@ -583,12 +583,27 @@ namespace Falcor
         bone.parentID = parentID;
         bone.boneID = boneID;
         bone.localTransform = aiMatToGLM(pCurNode->mTransformation);
+
+        // For skeleton's root node, take the cumulative transform up to scene's root as the
+        // transform. Skeleton root is not always the scene root.
+        if (parentID == AnimationController::kInvalidBoneID)
+        {
+            const aiNode* pNode = pCurNode->mParent;
+            while (pNode)
+            {
+                bone.localTransform = aiMatToGLM(pNode->mTransformation) * bone.localTransform;
+                pNode = pNode->mParent;
+            }
+        }
         bone.originalLocalTransform = bone.localTransform;
         bone.globalTransform = bone.localTransform;
 
         if (parentID != AnimationController::kInvalidBoneID)
         {
-            bone.globalTransform *= mBones[parentID].globalTransform;
+            // The commented out line is how Falcor code originally was. But, that is contradictory to the code in AnimationController::animate method
+            // where childGlobalTransform is taken as parentGlobalTransform * childLocalTransform
+            //bone.globalTransform *= mBones[parentID].globalTransform;
+            bone.globalTransform = mBones[parentID].globalTransform * bone.localTransform;
         }
 
         boneID++;
@@ -622,7 +637,7 @@ namespace Falcor
         }
     }
 
-    void AssimpModelImporter::initializeBones(const aiScene* pScene)
+    void AssimpModelImporter::initializeBones(const aiScene* pScene, Model::LoadContext* loadContext)
     {
         // Go over all the meshes, and find the bones that are being used
         for (uint32_t i = 0; i < pScene->mNumMeshes; i++)
@@ -639,25 +654,82 @@ namespace Falcor
 
         if (mBoneNameToIdMap.size() != 0)
         {
-            // For every bone used, all its ancestors are bones too. Mark them
-            for (auto it = mBoneNameToIdMap.begin(); it != mBoneNameToIdMap.end(); it++)
+            aiNode* pSkeletonRoot = pScene->mRootNode;
+
+            // There can be bones which are not used in skinning. Collect them.
+            if (loadContext && loadContext->mVerifyBeforeAddingNodeAsBone)
             {
-                aiNode* pCurNode = pScene->mRootNode->FindNode(it->first.c_str());
-                while (pCurNode)
+                // we insert only those ancestors which are descendants of some bone that is used in skinning.
+                for (auto it = mBoneNameToIdMap.begin(); it != mBoneNameToIdMap.end(); it++)
                 {
-                    // Used bones are already recorded, only record additional nodes
-                    if (mBoneNameToIdMap.count(pCurNode->mName.C_Str()) == 0)
+                    std::vector<aiNode*> ancestorNodes;
+                    aiNode* pCurNode = pScene->mRootNode->FindNode(it->first.c_str());
+                    while (pCurNode)
                     {
-                        mAdditionalUsedNodes.insert(pCurNode);
+                        // Used bones are already recorded, only record additional nodes
+                        if (mBoneNameToIdMap.count(pCurNode->mName.C_Str()) == 0)
+                        {
+                            ancestorNodes.push_back(pCurNode);
+                        }
+                        else
+                        {
+                            for (auto ancestorIt = ancestorNodes.begin(), ancestorItEnd = ancestorNodes.end(); ancestorIt != ancestorItEnd; ++ancestorIt)
+                            {
+                                aiNode* pNode = *ancestorIt; // for debugging
+                                mAdditionalUsedNodes.insert(*ancestorIt);
+                            }
+                        }
+                        pCurNode = pCurNode->mParent;
                     }
-                    pCurNode = pCurNode->mParent;
+                }
+                // Scene's root node is not necessarily the root node of the skeleton. So, walk down in a breadth first manner to find the first bone node
+                // and take that as the root of the skeleton.
+                std::queue<aiNode*> nodeQ;
+                nodeQ.push(pScene->mRootNode);
+                while (!nodeQ.empty())
+                {
+                    aiNode* pNode = nodeQ.front();
+                    nodeQ.pop();
+                    if (isUsedNode(pNode))
+                    {
+                        pSkeletonRoot = pNode;
+                        break;
+                    }
+                    else
+                    {
+                        for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+                        {
+                            aiNode* pChild = pNode->mChildren[i];
+                            nodeQ.push(pChild);
+                        }
+                    }
                 }
             }
+            else
+            {
+                // This block is the Falcor code as it shipped. It ends up adding nodes that
+                // are not bones as bones.
+
+                for (auto it = mBoneNameToIdMap.begin(); it != mBoneNameToIdMap.end(); it++)
+                {
+                    aiNode* pCurNode = pScene->mRootNode->FindNode(it->first.c_str());
+                    while (pCurNode)
+                    {
+                        // Used bones are already recorded, only record additional nodes
+                        if (mBoneNameToIdMap.count(pCurNode->mName.C_Str()) == 0)
+                        {
+                            mAdditionalUsedNodes.insert(pCurNode);
+                        }
+                        pCurNode = pCurNode->mParent;
+                    }
+                }
+            }
+
 
             // Now create the hierarchy
             size_t hierarchySize = mBoneNameToIdMap.size() + mAdditionalUsedNodes.size();
             mBones.resize(hierarchySize);
-            uint32_t nodeBoneCount = initBone(pScene->mRootNode, AnimationController::kInvalidBoneID, 0);
+            uint32_t nodeBoneCount = initBone(pSkeletonRoot, AnimationController::kInvalidBoneID, 0);
             assert(uint32_t(hierarchySize) == nodeBoneCount);
 
             initializeBonesOffsetMatrices(pScene);
@@ -666,7 +738,7 @@ namespace Falcor
 
     void AssimpModelImporter::createAnimationController(const aiScene* pScene, Model::LoadContext* loadContext)
     {
-        initializeBones(pScene);
+        initializeBones(pScene, loadContext);
 
         // Create animation controller as long as there are bones.
         // This will render bind pose if there are no animations.

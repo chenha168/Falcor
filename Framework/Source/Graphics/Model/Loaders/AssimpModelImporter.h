@@ -75,7 +75,7 @@ namespace Falcor
         bool createAllMaterials(const aiScene* pScene, const std::string& modelFolder, bool isObjFile, bool useSrgb);
 
         void createAnimationController(const aiScene* pScene, Model::LoadContext* loadContext);
-        void initializeBones(const aiScene* pScene);
+        void initializeBones(const aiScene* pScene, Model::LoadContext* loadContext);
         uint32_t initBone(const aiNode* pNode, uint32_t parentID, uint32_t boneID);
         void initializeBonesOffsetMatrices(const aiScene* pScene);
 
