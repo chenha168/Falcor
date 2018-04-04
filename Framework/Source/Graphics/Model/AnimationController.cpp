@@ -106,10 +106,13 @@ namespace Falcor
 
         for(uint32_t i = 0; i < mBones.size(); i++)
         {
-            mBones[i].globalTransform = mBones[i].localTransform;
             if(mBones[i].parentID != kInvalidBoneID)
             {
                 mBones[i].globalTransform = mBones[mBones[i].parentID].globalTransform * mBones[i].localTransform;
+            }
+            else
+            {
+                mBones[i].globalTransform = mBones[i].localTransform;
             }
             mBoneTransforms[i] = mBones[i].globalTransform * mBones[i].offset;
             mBoneInvTransposeTransforms[i] = transpose(inverse(mBoneTransforms[i]));

@@ -659,49 +659,59 @@ namespace Falcor
             // There can be bones which are not used in skinning. Collect them.
             if (loadContext && loadContext->mVerifyBeforeAddingNodeAsBone)
             {
-                // we insert only those ancestors which are descendants of some bone that is used in skinning.
-                for (auto it = mBoneNameToIdMap.begin(); it != mBoneNameToIdMap.end(); it++)
+                // Scene's root node is not necessarily the root node of the skeleton. As a heuristic to find the skeleton root, we walk down from the root node
+                // until we find a node which has more than one "bone ancestor" as child. 
+                std::unordered_set<aiNode*> ancestorsOfSkinnedBones;
                 {
-                    std::vector<aiNode*> ancestorNodes;
-                    aiNode* pCurNode = pScene->mRootNode->FindNode(it->first.c_str());
-                    while (pCurNode)
+                    for (auto it = mBoneNameToIdMap.begin(), itEnd = mBoneNameToIdMap.end(); it != itEnd; ++it)
                     {
-                        // Used bones are already recorded, only record additional nodes
-                        if (mBoneNameToIdMap.count(pCurNode->mName.C_Str()) == 0)
+                        aiNode* pCurNode = pScene->mRootNode->FindNode(it->first.c_str());
+                        while (pCurNode)
                         {
-                            ancestorNodes.push_back(pCurNode);
+                            ancestorsOfSkinnedBones.insert(pCurNode);
+                            pCurNode = pCurNode->mParent;
                         }
-                        else
-                        {
-                            for (auto ancestorIt = ancestorNodes.begin(), ancestorItEnd = ancestorNodes.end(); ancestorIt != ancestorItEnd; ++ancestorIt)
-                            {
-                                aiNode* pNode = *ancestorIt; // for debugging
-                                mAdditionalUsedNodes.insert(*ancestorIt);
-                            }
-                        }
-                        pCurNode = pCurNode->mParent;
                     }
                 }
-                // Scene's root node is not necessarily the root node of the skeleton. So, walk down in a breadth first manner to find the first bone node
-                // and take that as the root of the skeleton.
+                // Do a bread-first search starting from scene root until we find a node that has more than "bone ancestor" as children.
                 std::queue<aiNode*> nodeQ;
-                nodeQ.push(pScene->mRootNode);
+                nodeQ.push(pSkeletonRoot);
                 while (!nodeQ.empty())
                 {
                     aiNode* pNode = nodeQ.front();
                     nodeQ.pop();
-                    if (isUsedNode(pNode))
+
+                    int numBoneChildren = 0;
+                    for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+                    {
+                        aiNode* pChild = pNode->mChildren[i];
+                        if (ancestorsOfSkinnedBones.find(pChild) != ancestorsOfSkinnedBones.end())
+                        {
+                            numBoneChildren++;
+                            nodeQ.push(pChild);
+                        }
+                    }
+                    if (numBoneChildren > 1)
                     {
                         pSkeletonRoot = pNode;
                         break;
                     }
-                    else
+                }
+                if (mBoneNameToIdMap.find(pSkeletonRoot->mName.C_Str()) == mBoneNameToIdMap.end())
+                {
+                    mAdditionalUsedNodes.insert(pSkeletonRoot);
+                }
+                for (auto it = mBoneNameToIdMap.begin(), itEnd= mBoneNameToIdMap.end(); it != itEnd; ++it)
+                {
+                    aiNode* pCurNode = pScene->mRootNode->FindNode(it->first.c_str());
+                    while (pCurNode && (pCurNode != pSkeletonRoot))
                     {
-                        for (unsigned int i = 0; i < pNode->mNumChildren; ++i)
+                        // Used bones are already recorded, only record additional nodes
+                        if (mBoneNameToIdMap.find(pCurNode->mName.C_Str()) == mBoneNameToIdMap.end())
                         {
-                            aiNode* pChild = pNode->mChildren[i];
-                            nodeQ.push(pChild);
+                            mAdditionalUsedNodes.insert(pCurNode);
                         }
+                        pCurNode = pCurNode->mParent;
                     }
                 }
             }
