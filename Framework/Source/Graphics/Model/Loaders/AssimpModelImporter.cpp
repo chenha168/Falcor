@@ -673,7 +673,7 @@ namespace Falcor
                         }
                     }
                 }
-                // Do a bread-first search starting from scene root until we find a node that has more than "bone ancestor" as children.
+                // Do a breadth-first search starting from scene root until we find a node that has more than "bone ancestor" as children.
                 std::queue<aiNode*> nodeQ;
                 nodeQ.push(pSkeletonRoot);
                 while (!nodeQ.empty())
